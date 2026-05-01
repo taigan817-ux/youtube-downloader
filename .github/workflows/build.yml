@@ -11,7 +11,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
@@ -19,18 +19,15 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt update
+          # Устанавливаем совместимые версии autoconf и libtool
           sudo apt install -y git zip unzip openjdk-17-jdk python3-pip \
-            autoconf libtool pkg-config zlib1g-dev libffi-dev libssl-dev
+            autoconf=2.71-2 libtool=2.4.7-5 pkg-config zlib1g-dev libffi-dev libssl-dev
 
-      - name: Install Buildozer
+      - name: Install Buildozer and Cython
         run: |
           pip install --upgrade pip
           pip install --upgrade cython
           pip install buildozer
-
-      - name: Accept Android SDK license
-        run: |
-          yes | ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
       - name: Build APK
         run: |
