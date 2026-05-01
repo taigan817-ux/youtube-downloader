@@ -1,4 +1,6 @@
 [app]
+android.build_tools = 33.0.0
+android.accept_sdk_license = True
 
 title = YouTube Downloader
 package.name = youtubedownloader
