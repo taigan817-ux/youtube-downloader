@@ -21,7 +21,28 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y git zip unzip openjdk-17-jdk python3-pip \
-          autoconf libtool pkg-config zlib1g-dev libffi-dev libssl-dev
+          autoconf libtool pkg-config zlib1g-dev libffi-dev libssl-dev \
+          android-sdk build-essential
+        
+    - name: Pre-install Android SDK build-tools
+      run: |
+        # Устанавливаем Android SDK командной строки
+        mkdir -p $HOME/android-sdk
+        cd $HOME/android-sdk
+        wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+        unzip -q commandlinetools-linux-11076708_latest.zip
+        rm commandlinetools-linux-11076708_latest.zip
+        export ANDROID_SDK_ROOT=$HOME/android-sdk
+        export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/bin
+        
+        # Принимаем лицензии
+        yes | $ANDROID_SDK_ROOT/cmdline-tools/bin/sdkmanager --licenses || true
+        
+        # Устанавливаем нужные build-tools
+        $ANDROID_SDK_ROOT/cmdline-tools/bin/sdkmanager "build-tools;33.0.0" "platform-tools" "platforms;android-33"
+        
+        # Создаём symlink для aidl
+        sudo ln -sf $ANDROID_SDK_ROOT/build-tools/33.0.0/aidl /usr/local/bin/aidl
         
     - name: Install Buildozer
       run: |
@@ -29,18 +50,12 @@ jobs:
         pip install --upgrade cython
         pip install buildozer
         
-    - name: Accept Android SDK licenses (force)
+    - name: Configure Buildozer to use pre-installed SDK
       run: |
-        # Находим sdkmanager
-        SDKMANAGER=$(find ~/.buildozer -name "sdkmanager" 2>/dev/null | head -1)
-        if [ -f "$SDKMANAGER" ]; then
-          echo "Принимаем все лицензии через $SDKMANAGER"
-          yes | $SDKMANAGER --licenses || true
-          # Принудительно принимаем лицензию для build-tools 37
-          yes | $SDKMANAGER --licenses --verbose || true
-        else
-          echo "sdkmanager не найден. Пробуем установить его через buildozer."
-        fi
+        export ANDROID_HOME=$HOME/android-sdk
+        echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+        echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
+        echo "$ANDROID_HOME/build-tools/33.0.0" >> $GITHUB_PATH
         
     - name: Build APK
       run: |
