@@ -12,54 +12,28 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+      
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
         
-    - name: Install system dependencies
+    - name: Install Buildozer dependencies
       run: |
         sudo apt update
-        sudo apt install -y git zip unzip openjdk-17-jdk python3-pip \
-          autoconf libtool pkg-config zlib1g-dev libffi-dev libssl-dev \
-          android-sdk build-essential
+        sudo apt install -y git zip unzip autoconf libtool pkg-config zlib1g-dev \
+          libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
         
-    - name: Pre-install Android SDK build-tools
-      run: |
-        # Устанавливаем Android SDK командной строки
-        mkdir -p $HOME/android-sdk
-        cd $HOME/android-sdk
-        wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-        unzip -q commandlinetools-linux-11076708_latest.zip
-        rm commandlinetools-linux-11076708_latest.zip
-        export ANDROID_SDK_ROOT=$HOME/android-sdk
-        export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/bin
-        
-        # Принимаем лицензии
-        yes | $ANDROID_SDK_ROOT/cmdline-tools/bin/sdkmanager --licenses || true
-        
-        # Устанавливаем нужные build-tools
-        $ANDROID_SDK_ROOT/cmdline-tools/bin/sdkmanager "build-tools;33.0.0" "platform-tools" "platforms;android-33"
-        
-        # Создаём symlink для aidl
-        sudo ln -sf $ANDROID_SDK_ROOT/build-tools/33.0.0/aidl /usr/local/bin/aidl
-        
-    - name: Install Buildozer
-      run: |
-        pip install --upgrade pip
-        pip install --upgrade cython
-        pip install buildozer
-        
-    - name: Configure Buildozer to use pre-installed SDK
-      run: |
-        export ANDROID_HOME=$HOME/android-sdk
-        echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
-        echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
-        echo "$ANDROID_HOME/build-tools/33.0.0" >> $GITHUB_PATH
-        
-    - name: Build APK
-      run: |
-        buildozer -v android debug
+    - name: Build APK with Buildozer
+      uses: ArtemSBulgakov/buildozer-action@v1
+      with:
+        command: buildozer android debug
+        buildozer_version: stable
         
     - name: Upload APK
       uses: actions/upload-artifact@v4
