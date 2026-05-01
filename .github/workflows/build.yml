@@ -29,11 +29,18 @@ jobs:
         pip install --upgrade cython
         pip install buildozer
         
-    - name: Accept Android SDK licenses (fix)
+    - name: Accept Android SDK licenses (force)
       run: |
-        yes | sdkmanager --licenses || true
-        yes | ~/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
-        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+        # Находим sdkmanager
+        SDKMANAGER=$(find ~/.buildozer -name "sdkmanager" 2>/dev/null | head -1)
+        if [ -f "$SDKMANAGER" ]; then
+          echo "Принимаем все лицензии через $SDKMANAGER"
+          yes | $SDKMANAGER --licenses || true
+          # Принудительно принимаем лицензию для build-tools 37
+          yes | $SDKMANAGER --licenses --verbose || true
+        else
+          echo "sdkmanager не найден. Пробуем установить его через buildozer."
+        fi
         
     - name: Build APK
       run: |
