@@ -29,11 +29,11 @@ jobs:
         pip install --upgrade cython
         pip install buildozer
         
-    - name: Accept Android SDK licenses
+    - name: Accept Android SDK licenses (fix)
       run: |
-        mkdir -p ~/.android
-        echo "### User Sources for Android SDK" >> ~/.android/repositories.cfg
-        yes | ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
+        yes | sdkmanager --licenses || true
+        yes | ~/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
+        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
         
     - name: Build APK
       run: |
