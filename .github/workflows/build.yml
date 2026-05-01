@@ -29,10 +29,6 @@ jobs:
         pip install --upgrade cython
         pip install buildozer
         
-    - name: Configure Buildozer
-      run: |
-        buildozer init
-        
     - name: Accept Android SDK licenses
       run: |
         mkdir -p ~/.android
