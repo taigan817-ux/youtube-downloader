@@ -19,9 +19,8 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt update
-          # Устанавливаем совместимые версии autoconf и libtool
           sudo apt install -y git zip unzip openjdk-17-jdk python3-pip \
-            autoconf=2.71-2 libtool=2.4.7-5 pkg-config zlib1g-dev libffi-dev libssl-dev
+            autoconf automake libtool pkg-config zlib1g-dev libffi-dev libssl-dev
 
       - name: Install Buildozer and Cython
         run: |
